@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TalentRadar — inVision U</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+    * { font-family: 'Inter', sans-serif; }
+
+    body {
+      background: #0a0a0f;
+      color: #e2e8f0;
+      min-height: 100vh;
+    }
+
+    /* Анимация появления карточек */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Анимация счётчиков */
+    @keyframes countUp {
+      from { opacity: 0; transform: scale(0.8); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+
+    /* Пульсация градиента в шапке */
+    @keyframes gradientShift {
+      0%   { background-position: 0% 50%; }
+      50%  { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .hero-gradient {
+      background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460, #533483);
+      background-size: 300% 300%;
+      animation: gradientShift 8s ease infinite;
+    }
+
+    .card-animate {
+      animation: fadeInUp 0.5s ease forwards;
+      opacity: 0;
+    }
+
+    .stat-animate {
+      animation: countUp 0.6s ease forwards;
+    }
+
+    /* Строки таблицы */
+    .candidate-row {
+      transition: background 0.2s ease, transform 0.15s ease;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .candidate-row:hover {
+      background: rgba(99, 102, 241, 0.08);
+      transform: translateX(4px);
+      cursor: pointer;
+    }
+
+    /* Скролл-бар */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #0a0a0f; }
+    ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+
+    /* Progress bar анимация */
+    @keyframes fillBar {
+      from { width: 0%; }
+      to   { width: var(--target-width); }
+    }
+    .progress-fill {
+      animation: fillBar 1s ease forwards;
+      animation-delay: 0.3s;
+      width: 0%;
+    }
+
+    /* Бейджи статуса */
+    .badge-shortlist {
+      background: rgba(16, 185, 129, 0.15);
+      color: #10b981;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    .badge-review {
+      background: rgba(245, 158, 11, 0.15);
+      color: #f59e0b;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+    .badge-declined {
+      background: rgba(239, 68, 68, 0.15);
+      color: #ef4444;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    /* Поисковая строка */
+    .search-input {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #e2e8f0;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .search-input:focus {
+      outline: none;
+      border-color: #6366f1;
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
+    }
+    .search-input::placeholder { color: rgba(255,255,255,0.3); }
+
+    /* Фильтр-кнопки */
+    .filter-btn {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: rgba(255,255,255,0.6);
+      transition: all 0.2s;
+    }
+    .filter-btn:hover, .filter-btn.active {
+      background: rgba(99,102,241,0.2);
+      border-color: #6366f1;
+      color: #a5b4fc;
+    }
+
+    /* AI флаг */
+    .ai-flag {
+      background: rgba(239,68,68,0.15);
+      color: #ef4444;
+      border: 1px solid rgba(239,68,68,0.2);
+      font-size: 10px;
+    }
+    .human-flag {
+      background: rgba(16,185,129,0.15);
+      color: #10b981;
+      border: 1px solid rgba(16,185,129,0.2);
+      font-size: 10px;
+    }
+
+    /* Аватарки */
+    .avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 13px;
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ШАПКА -->
+<header class="hero-gradient px-8 py-6 flex items-center justify-between">
+  <div class="flex items-center gap-4">
+    <div style="width:42px;height:42px;border-radius:12px;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-size:20px;">🎓</div>
+    <div>
+      <h1 style="font-size:20px;font-weight:700;color:#fff;">TalentRadar</h1>
+      <p style="font-size:12px;color:rgba(255,255,255,0.6);">inVision U — Приёмная комиссия</p>
+    </div>
+  </div>
+  <div style="font-size:13px;color:rgba(255,255,255,0.5);">
+    Сезон 2025 · Алматы, Казахстан
+  </div>
+</header>
+
+<!-- СТАТИСТИКА -->
+<div class="px-8 py-6 grid grid-cols-4 gap-4" id="stats-grid">
+  <!-- карточки статистики рендерятся из JS -->
+</div>
+
+<!-- ПОИСК И ФИЛЬТРЫ -->
+<div class="px-8 pb-4 flex items-center gap-3 flex-wrap">
+  <input
+    type="text"
+    id="search-input"
+    placeholder="🔍  Поиск по имени..."
+    class="search-input rounded-xl px-4 py-2 text-sm"
+    style="width:260px;"
+    oninput="filterCandidates()"
+  />
+  <button class="filter-btn active rounded-xl px-4 py-2 text-sm" onclick="setFilter('all', this)">Все</button>
+  <button class="filter-btn rounded-xl px-4 py-2 text-sm" onclick="setFilter('shortlist', this)">🟢 Shortlist</button>
+  <button class="filter-btn rounded-xl px-4 py-2 text-sm" onclick="setFilter('review', this)">🟡 На рассмотрении</button>
+  <button class="filter-btn rounded-xl px-4 py-2 text-sm" onclick="setFilter('declined', this)">🔴 Отказ</button>
+  <div style="margin-left:auto;font-size:13px;color:rgba(255,255,255,0.4);" id="count-label"></div>
+</div>
+
+<!-- ТАБЛИЦА -->
+<div class="px-8 pb-8">
+  <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:16px;overflow:hidden;">
+
+    <!-- Заголовок таблицы -->
+    <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr 1fr 1fr;padding:12px 20px;background:rgba(255,255,255,0.04);font-size:11px;color:rgba(255,255,255,0.4);letter-spacing:0.05em;text-transform:uppercase;">
+      <div>Кандидат</div>
+      <div style="text-align:center;">Балл</div>
+      <div style="text-align:center;">Лидерство</div>
+      <div style="text-align:center;">Рост</div>
+      <div style="text-align:center;">Мотивация</div>
+      <div style="text-align:center;">Статус</div>
+      <div style="text-align:center;">Текст</div>
+    </div>
+
+    <!-- Строки кандидатов -->
+    <div id="candidates-list"></div>
+
+  </div>
+</div>
+
+<script>
+// ── MOCK ДАННЫЕ (потом заменим на реальный API) ──────────────────
+const allCandidates = [
+  { id:1, name:"Айгерим Сейткали",  username:"aigerim_s",   score:91, leadership:23, growth:24, motivation:25, authenticity:19, status:"shortlist", ai_text:false,  summary:"Сильный лидерский потенциал, конкретные примеры инициатив." },
+  { id:2, name:"Данияр Ахметов",    username:"daniyar_a",   score:84, leadership:21, growth:22, motivation:22, authenticity:19, status:"shortlist", ai_text:false,  summary:"Высокая мотивация, впечатляющая траектория роста." },
+  { id:3, name:"Мадина Касымова",   username:"madina_k",    score:78, leadership:19, growth:20, motivation:21, authenticity:18, status:"shortlist", ai_text:false,  summary:"Ценные предпринимательские навыки, чёткое видение." },
+  { id:4, name:"Арман Берсимбаев",  username:"arman_b",     score:72, leadership:18, growth:19, motivation:18, authenticity:17, status:"review",    ai_text:false,  summary:"Перспективный кандидат, нужно уточнить мотивацию." },
+  { id:5, name:"Жансая Нурланова",  username:"zhansaya_n",  score:68, leadership:16, growth:18, motivation:19, authenticity:15, status:"review",    ai_text:true,   summary:"Хорошие идеи, но эссе написано с помощью ИИ." },
+  { id:6, name:"Тимур Сагинтаев",   username:"timur_s",     score:65, leadership:15, growth:17, motivation:18, authenticity:15, status:"review",    ai_text:false,  summary:"Средний уровень, требует дополнительного интервью." },
+  { id:7, name:"Аяулым Джаксыбек", username:"ayaulym_d",   score:58, leadership:13, growth:16, motivation:16, authenticity:13, status:"review",    ai_text:false,  summary:"Недостаточно примеров лидерства." },
+  { id:8, name:"Нурлан Оспанов",    username:"nurlan_o",    score:45, leadership:10, growth:12, motivation:13, authenticity:10, status:"declined",  ai_text:true,   summary:"Слабая мотивация, эссе сгенерировано ИИ." },
+  { id:9, name:"Камила Рахимова",   username:"kamila_r",    score:38, leadership:8,  growth:10, motivation:11, authenticity:9,  status:"declined",  ai_text:false,  summary:"Не соответствует критериям программы." },
+  { id:10,name:"Серик Байжанов",    username:"serik_b",     score:30, leadership:7,  growth:8,  motivation:9,  authenticity:6,  status:"declined",  ai_text:true,   summary:"Минимальная вовлечённость, использован ИИ." },
+];
+
+// Цвета аватарок
+const avatarColors = [
+  ["#6366f1","#312e81"],["#10b981","#064e3b"],["#f59e0b","#78350f"],
+  ["#ec4899","#831843"],["#3b82f6","#1e3a8a"],["#8b5cf6","#4c1d95"],
+];
+
+let currentFilter = "all";
+
+// ── СТАТИСТИКА ────────────────────────────────────────────────────
+function renderStats() {
+  const total     = allCandidates.length;
+  const shortlist = allCandidates.filter(c => c.status === "shortlist").length;
+  const review    = allCandidates.filter(c => c.status === "review").length;
+  const aiCount   = allCandidates.filter(c => c.ai_text).length;
+  const avgScore  = Math.round(allCandidates.reduce((s,c) => s+c.score, 0) / total);
+
+  const stats = [
+    { label:"Всего заявок",        value: total,     color:"#6366f1", icon:"📋" },
+    { label:"Shortlist",           value: shortlist,  color:"#10b981", icon:"🌟" },
+    { label:"На рассмотрении",     value: review,     color:"#f59e0b", icon:"🔍" },
+    { label:"Средний балл",        value: avgScore,   color:"#a78bfa", icon:"📊" },
+  ];
+
+  const grid = document.getElementById("stats-grid");
+  grid.innerHTML = stats.map((s, i) => `
+    <div class="stat-animate card-animate" style="
+      animation-delay:${i*0.1}s;
+      background:rgba(255,255,255,0.04);
+      border:1px solid rgba(255,255,255,0.08);
+      border-radius:16px;
+      padding:20px;
+    ">
+      <div style="font-size:22px;margin-bottom:8px;">${s.icon}</div>
+      <div style="font-size:32px;font-weight:700;color:${s.color};">${s.value}</div>
+      <div style="font-size:13px;color:rgba(255,255,255,0.5);margin-top:4px;">${s.label}</div>
+    </div>
+  `).join("");
+}
+
+// ── ТАБЛИЦА КАНДИДАТОВ ────────────────────────────────────────────
+function getInitials(name) {
+  return name.split(" ").map(w => w[0]).join("").slice(0,2).toUpperCase();
+}
+
+function renderCandidates(list) {
+  const container = document.getElementById("candidates-list");
+  document.getElementById("count-label").textContent = `Показано: ${list.length}`;
+
+  if (list.length === 0) {
+    container.innerHTML = `<div style="text-align:center;padding:48px;color:rgba(255,255,255,0.3);">Никого не найдено</div>`;
+    return;
+  }
+
+  container.innerHTML = list.map((c, i) => {
+    const [fg, bg] = avatarColors[i % avatarColors.length];
+    const initials  = getInitials(c.name);
+    const pct       = c.score;
+    const barColor  = c.score >= 80 ? "#10b981" : c.score >= 60 ? "#f59e0b" : "#ef4444";
+
+    const badgeClass = c.status === "shortlist" ? "badge-shortlist"
+                     : c.status === "review"    ? "badge-review"
+                     :                            "badge-declined";
+    const badgeText  = c.status === "shortlist" ? "Shortlist"
+                     : c.status === "review"    ? "Рассмотреть"
+                     :                            "Отказ";
+
+    const aiLabel = c.ai_text
+      ? `<span class="ai-flag" style="padding:2px 7px;border-radius:99px;">🤖 ИИ</span>`
+      : `<span class="human-flag" style="padding:2px 7px;border-radius:99px;">✍️ Человек</span>`;
+
+    return `
+      <div class="candidate-row card-animate"
+           style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr 1fr 1fr;
+                  padding:14px 20px;align-items:center;animation-delay:${i*0.07}s;"
+           onclick="openCandidate(${c.id})">
+
+        <!-- Имя -->
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div class="avatar" style="background:${bg};color:${fg};">${initials}</div>
+          <div>
+            <div style="font-size:14px;font-weight:500;color:#f1f5f9;">${c.name}</div>
+            <div style="font-size:12px;color:rgba(255,255,255,0.35);">@${c.username}</div>
+          </div>
+        </div>
+
+        <!-- Общий балл с прогресс-баром -->
+        <div style="text-align:center;">
+          <div style="font-size:18px;font-weight:700;color:${barColor};">${c.score}</div>
+          <div style="height:4px;background:rgba(255,255,255,0.08);border-radius:2px;margin-top:4px;overflow:hidden;">
+            <div class="progress-fill" style="height:100%;background:${barColor};border-radius:2px;--target-width:${pct}%;"></div>
+          </div>
+        </div>
+
+        <!-- Лидерство -->
+        <div style="text-align:center;font-size:14px;color:#a5b4fc;">${c.leadership}<span style="font-size:11px;color:rgba(255,255,255,0.3)">/25</span></div>
+
+        <!-- Рост -->
+        <div style="text-align:center;font-size:14px;color:#6ee7b7;">${c.growth}<span style="font-size:11px;color:rgba(255,255,255,0.3)">/25</span></div>
+
+        <!-- Мотивация -->
+        <div style="text-align:center;font-size:14px;color:#fcd34d;">${c.motivation}<span style="font-size:11px;color:rgba(255,255,255,0.3)">/25</span></div>
+
+        <!-- Статус -->
+        <div style="text-align:center;">
+          <span class="${badgeClass}" style="padding:4px 10px;border-radius:99px;font-size:12px;font-weight:500;">${badgeText}</span>
+        </div>
+
+        <!-- AI флаг -->
+        <div style="text-align:center;">${aiLabel}</div>
+
+      </div>
+    `;
+  }).join("");
+}
+
+// ── ФИЛЬТРАЦИЯ ────────────────────────────────────────────────────
+function filterCandidates() {
+  const query = document.getElementById("search-input").value.toLowerCase();
+  let list = allCandidates;
+
+  if (currentFilter !== "all") {
+    list = list.filter(c => c.status === currentFilter);
+  }
+  if (query) {
+    list = list.filter(c => c.name.toLowerCase().includes(query));
+  }
+
+  renderCandidates(list);
+}
+
+function setFilter(filter, btn) {
+  currentFilter = filter;
+  document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  filterCandidates();
+}
+
+// ── ПЕРЕХОД НА КАРТОЧКУ ───────────────────────────────────────────
+function openCandidate(id) {
+  window.location.href = `candidate.html?id=${id}`;
+}
+
+// ── ИНИЦИАЛИЗАЦИЯ ─────────────────────────────────────────────────
+renderStats();
+renderCandidates(allCandidates);
+</script>
+
+</body>
+</html>

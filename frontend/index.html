@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TalentRadar — inVision U</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    * { font-family: 'Inter', sans-serif; transition: background 0.3s, color 0.3s, border-color 0.3s; }
+
+    /* ── ТЁМНАЯ ТЕМА (по умолчанию) ── */
+    [data-theme="dark"] {
+      --bg:         #0a0a0f;
+      --bg2:        rgba(255,255,255,0.04);
+      --bg3:        rgba(255,255,255,0.08);
+      --border:     rgba(255,255,255,0.07);
+      --border2:    rgba(255,255,255,0.12);
+      --text:       #e2e8f0;
+      --text2:      rgba(255,255,255,0.5);
+      --text3:      rgba(255,255,255,0.3);
+      --row-hover:  rgba(99,102,241,0.08);
+      --input-bg:   rgba(255,255,255,0.05);
+      --filter-bg:  rgba(255,255,255,0.05);
+      --filter-col: rgba(255,255,255,0.6);
+    }
+
+    /* ── СВЕТЛАЯ ТЕМА ── */
+    [data-theme="light"] {
+      --bg:         #f5f5f7;
+      --bg2:        #ffffff;
+      --bg3:        #f0f0f5;
+      --border:     rgba(0,0,0,0.08);
+      --border2:    rgba(0,0,0,0.14);
+      --text:       #1a1a2e;
+      --text2:      rgba(0,0,0,0.5);
+      --text3:      rgba(0,0,0,0.35);
+      --row-hover:  rgba(99,102,241,0.06);
+      --input-bg:   #ffffff;
+      --filter-bg:  #ffffff;
+      --filter-col: rgba(0,0,0,0.6);
+    }
+
+    body { background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    @keyframes fadeInUp {
+      from { opacity:0; transform:translateY(20px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+    @keyframes gradientShift {
+      0%   { background-position:0% 50%; }
+      50%  { background-position:100% 50%; }
+      100% { background-position:0% 50%; }
+    }
+    @keyframes fillBar {
+      from { width:0%; }
+      to   { width:var(--target-width); }
+    }
+
+    .card-animate { animation: fadeInUp 0.5s ease forwards; opacity:0; }
+    .progress-fill { animation: fillBar 1s ease forwards; animation-delay:0.3s; width:0%; }
+
+    .hero-gradient {
+      background: linear-gradient(135deg,#1a1a2e,#16213e,#0f3460,#533483);
+      background-size: 300% 300%;
+      animation: gradientShift 8s ease infinite;
+    }
+
+    .theme-toggle {
+      width:52px; height:28px;
+      background:rgba(255,255,255,0.15);
+      border-radius:99px; position:relative;
+      cursor:pointer; border:1px solid rgba(255,255,255,0.25);
+      transition:background 0.3s; flex-shrink:0;
+    }
+    .theme-toggle .knob {
+      position:absolute; top:3px; left:3px;
+      width:20px; height:20px; border-radius:50%;
+      background:#fff; transition:transform 0.3s;
+      display:flex; align-items:center; justify-content:center; font-size:11px;
+    }
+    [data-theme="light"] .theme-toggle .knob { transform:translateX(24px); }
+
+    .candidate-row {
+      border-bottom:1px solid var(--border);
+      transition:background 0.2s, transform 0.15s; cursor:pointer;
+    }
+    .candidate-row:hover { background:var(--row-hover); transform:translateX(4px); }
+
+    .search-input {
+      background:var(--input-bg); border:1px solid var(--border2);
+      color:var(--text); transition:border-color 0.2s, box-shadow 0.2s;
+    }
+    .search-input:focus { outline:none; border-color:#6366f1; box-shadow:0 0 0 3px rgba(99,102,241,0.15); }
+    .search-input::placeholder { color:var(--text3); }
+
+    .filter-btn {
+      background:var(--filter-bg); border:1px solid var(--border2);
+      color:var(--filter-col); transition:all 0.2s; cursor:pointer;
+    }
+    .filter-btn:hover, .filter-btn.active {
+      background:rgba(99,102,241,0.15); border-color:#6366f1; color:#818cf8;
+    }
+
+    .table-wrap { background:var(--bg2); border:1px solid var(--border); border-radius:16px; overflow:hidden; }
+    .table-header {
+      background:var(--bg3); color:var(--text3);
+      font-size:11px; letter-spacing:0.05em; text-transform:uppercase;
+      display:grid; grid-template-columns:2fr 1fr 1fr 1fr 1fr 1fr 1fr; padding:12px 20px;
+    }
+    .stat-card { background:var(--bg2); border:1px solid var(--border); border-radius:16px; padding:20px; }
+
+    .badge-shortlist { background:rgba(16,185,129,0.15); color:#10b981; border:1px solid rgba(16,185,129,0.3); }
+    .badge-review    { background:rgba(245,158,11,0.15);  color:#f59e0b; border:1px solid rgba(245,158,11,0.3); }
+    .badge-declined  { background:rgba(239,68,68,0.15);   color:#ef4444; border:1px solid rgba(239,68,68,0.3); }
+    .ai-flag    { background:rgba(239,68,68,0.12);  color:#ef4444; border:1px solid rgba(239,68,68,0.2);  font-size:11px; }
+    .human-flag { background:rgba(16,185,129,0.12); color:#10b981; border:1px solid rgba(16,185,129,0.2); font-size:11px; }
+    .avatar { width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:600; font-size:13px; flex-shrink:0; }
+
+    ::-webkit-scrollbar { width:6px; }
+    ::-webkit-scrollbar-track { background:var(--bg); }
+    ::-webkit-scrollbar-thumb { background:var(--border2); border-radius:3px; }
+  </style>
+</head>
+<body>
+
+<!-- ШАПКА -->
+<header class="hero-gradient" style="padding:20px 32px;display:flex;align-items:center;justify-content:space-between;">
+  <div style="display:flex;align-items:center;gap:14px;">
+    <div style="width:42px;height:42px;border-radius:12px;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-size:20px;">🎓</div>
+    <div>
+      <h1 style="font-size:20px;font-weight:700;color:#fff;margin:0;">TalentRadar</h1>
+      <p style="font-size:12px;color:rgba(255,255,255,0.6);margin:0;">inVision U — Приёмная комиссия</p>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <span style="font-size:12px;color:rgba(255,255,255,0.7);" id="theme-label">🌙 Тёмная</span>
+    <div class="theme-toggle" onclick="toggleTheme()">
+      <div class="knob" id="theme-knob">🌙</div>
+    </div>
+  </div>
+</header>
+
+<!-- СТАТИСТИКА -->
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;padding:24px 32px 16px;" id="stats-grid"></div>
+
+<!-- ПОИСК И ФИЛЬТРЫ -->
+<div style="padding:0 32px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+  <input type="text" id="search-input" placeholder="🔍  Поиск по имени..."
+    class="search-input" style="width:260px;padding:8px 16px;border-radius:12px;font-size:14px;"
+    oninput="filterCandidates()"/>
+  <button class="filter-btn active" style="padding:8px 16px;border-radius:12px;font-size:13px;" onclick="setFilter('all',this)">Все</button>
+  <button class="filter-btn" style="padding:8px 16px;border-radius:12px;font-size:13px;" onclick="setFilter('shortlist',this)">🟢 Shortlist</button>
+  <button class="filter-btn" style="padding:8px 16px;border-radius:12px;font-size:13px;" onclick="setFilter('review',this)">🟡 На рассмотрении</button>
+  <button class="filter-btn" style="padding:8px 16px;border-radius:12px;font-size:13px;" onclick="setFilter('declined',this)">🔴 Отказ</button>
+  <span style="margin-left:auto;font-size:13px;color:var(--text3);" id="count-label"></span>
+</div>
+
+<!-- ТАБЛИЦА -->
+<div style="padding:0 32px 40px;">
+  <div class="table-wrap">
+    <div class="table-header">
+      <div>Кандидат</div>
+      <div style="text-align:center;">Балл</div>
+      <div style="text-align:center;">Лидерство</div>
+      <div style="text-align:center;">Рост</div>
+      <div style="text-align:center;">Мотивация</div>
+      <div style="text-align:center;">Статус</div>
+      <div style="text-align:center;">Текст</div>
+    </div>
+    <div id="candidates-list"></div>
+  </div>
+</div>
+
+<script>
+const allCandidates = [
+  { id:1,  name:"Айгерим Сейткали", username:"aigerim_s",  score:91, leadership:23, growth:24, motivation:25, authenticity:19, status:"shortlist", ai_text:false },
+  { id:2,  name:"Данияр Ахметов",   username:"daniyar_a",  score:84, leadership:21, growth:22, motivation:22, authenticity:19, status:"shortlist", ai_text:false },
+  { id:3,  name:"Мадина Касымова",  username:"madina_k",   score:78, leadership:19, growth:20, motivation:21, authenticity:18, status:"shortlist", ai_text:false },
+  { id:4,  name:"Арман Берсимбаев", username:"arman_b",    score:72, leadership:18, growth:19, motivation:18, authenticity:17, status:"review",    ai_text:false },
+  { id:5,  name:"Жансая Нурланова", username:"zhansaya_n", score:68, leadership:16, growth:18, motivation:19, authenticity:15, status:"review",    ai_text:true  },
+  { id:6,  name:"Тимур Сагинтаев",  username:"timur_s",    score:65, leadership:15, growth:17, motivation:18, authenticity:15, status:"review",    ai_text:false },
+  { id:7,  name:"Аяулым Джаксыбек",username:"ayaulym_d",  score:58, leadership:13, growth:16, motivation:16, authenticity:13, status:"review",    ai_text:false },
+  { id:8,  name:"Нурлан Оспанов",   username:"nurlan_o",   score:45, leadership:10, growth:12, motivation:13, authenticity:10, status:"declined",  ai_text:true  },
+  { id:9,  name:"Камила Рахимова",  username:"kamila_r",   score:38, leadership:8,  growth:10, motivation:11, authenticity:9,  status:"declined",  ai_text:false },
+  { id:10, name:"Серик Байжанов",   username:"serik_b",    score:30, leadership:7,  growth:8,  motivation:9,  authenticity:6,  status:"declined",  ai_text:true  },
+];
+
+const avatarColors = [
+  ["#818cf8","#312e81"],["#34d399","#064e3b"],["#fbbf24","#78350f"],
+  ["#f472b6","#831843"],["#60a5fa","#1e3a8a"],["#a78bfa","#4c1d95"],
+];
+
+let currentFilter = "all";
+
+function toggleTheme() {
+  const html = document.documentElement;
+  const isDark = html.getAttribute("data-theme") === "dark";
+  html.setAttribute("data-theme", isDark ? "light" : "dark");
+  document.getElementById("theme-knob").textContent  = isDark ? "☀️" : "🌙";
+  document.getElementById("theme-label").textContent = isDark ? "☀️ Светлая" : "🌙 Тёмная";
+}
+
+function renderStats() {
+  const total = allCandidates.length;
+  const sl    = allCandidates.filter(c=>c.status==="shortlist").length;
+  const rev   = allCandidates.filter(c=>c.status==="review").length;
+  const avg   = Math.round(allCandidates.reduce((s,c)=>s+c.score,0)/total);
+  const stats = [
+    { label:"Всего заявок",    value:total, color:"#818cf8", icon:"📋" },
+    { label:"Shortlist",       value:sl,    color:"#34d399", icon:"🌟" },
+    { label:"На рассмотрении", value:rev,   color:"#fbbf24", icon:"🔍" },
+    { label:"Средний балл",    value:avg,   color:"#a78bfa", icon:"📊" },
+  ];
+  document.getElementById("stats-grid").innerHTML = stats.map((s,i)=>`
+    <div class="stat-card card-animate" style="animation-delay:${i*0.1}s;">
+      <div style="font-size:24px;margin-bottom:8px;">${s.icon}</div>
+      <div style="font-size:34px;font-weight:700;color:${s.color};">${s.value}</div>
+      <div style="font-size:13px;color:var(--text2);margin-top:4px;">${s.label}</div>
+    </div>`).join("");
+}
+
+function renderCandidates(list) {
+  document.getElementById("count-label").textContent = `Показано: ${list.length}`;
+  const container = document.getElementById("candidates-list");
+  if (!list.length) {
+    container.innerHTML = `<div style="text-align:center;padding:48px;color:var(--text3);">Никого не найдено</div>`;
+    return;
+  }
+  container.innerHTML = list.map((c,i)=>{
+    const [fg,bg] = avatarColors[i%avatarColors.length];
+    const initials = c.name.split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase();
+    const barColor = c.score>=80?"#10b981":c.score>=60?"#f59e0b":"#ef4444";
+    const badgeClass = c.status==="shortlist"?"badge-shortlist":c.status==="review"?"badge-review":"badge-declined";
+    const badgeText  = c.status==="shortlist"?"Shortlist":c.status==="review"?"Рассмотреть":"Отказ";
+    const aiLabel    = c.ai_text
+      ? `<span class="ai-flag" style="padding:3px 8px;border-radius:99px;">🤖 ИИ</span>`
+      : `<span class="human-flag" style="padding:3px 8px;border-radius:99px;">✍️ Живой</span>`;
+    return `
+      <div class="candidate-row card-animate"
+        style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr 1fr 1fr;padding:14px 20px;align-items:center;animation-delay:${i*0.06}s;"
+        onclick="location.href='candidate.html?id=${c.id}'">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div class="avatar" style="background:${bg};color:${fg};">${initials}</div>
+          <div>
+            <div style="font-size:14px;font-weight:500;color:var(--text);">${c.name}</div>
+            <div style="font-size:12px;color:var(--text3);">@${c.username}</div>
+          </div>
+        </div>
+        <div style="text-align:center;">
+          <div style="font-size:20px;font-weight:700;color:${barColor};">${c.score}</div>
+          <div style="height:4px;background:var(--bg3);border-radius:2px;margin-top:5px;overflow:hidden;">
+            <div class="progress-fill" style="height:100%;background:${barColor};border-radius:2px;--target-width:${c.score}%;"></div>
+          </div>
+        </div>
+        <div style="text-align:center;font-size:14px;color:#818cf8;">${c.leadership}<span style="font-size:11px;color:var(--text3)">/25</span></div>
+        <div style="text-align:center;font-size:14px;color:#34d399;">${c.growth}<span style="font-size:11px;color:var(--text3)">/25</span></div>
+        <div style="text-align:center;font-size:14px;color:#fbbf24;">${c.motivation}<span style="font-size:11px;color:var(--text3)">/25</span></div>
+        <div style="text-align:center;">
+          <span class="${badgeClass}" style="padding:4px 10px;border-radius:99px;font-size:12px;font-weight:500;">${badgeText}</span>
+        </div>
+        <div style="text-align:center;">${aiLabel}</div>
+      </div>`;
+  }).join("");
+}
+
+function filterCandidates() {
+  const q = document.getElementById("search-input").value.toLowerCase();
+  let list = allCandidates;
+  if (currentFilter!=="all") list = list.filter(c=>c.status===currentFilter);
+  if (q) list = list.filter(c=>c.name.toLowerCase().includes(q));
+  renderCandidates(list);
+}
+
+function setFilter(f,btn) {
+  currentFilter = f;
+  document.querySelectorAll(".filter-btn").forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");
+  filterCandidates();
+}
+
+renderStats();
+renderCandidates(allCandidates);
+</script>
+</body>
+</html>

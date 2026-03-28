@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+  <meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Кандидат — TalentRadar</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    * { font-family:'Inter',sans-serif; transition:background 0.3s,color 0.3s,border-color 0.3s; }
+
+    [data-theme="dark"] {
+      --bg:#0a0a0f; --bg2:rgba(255,255,255,0.04); --bg3:rgba(255,255,255,0.08);
+      --border:rgba(255,255,255,0.07); --border2:rgba(255,255,255,0.12);
+      --text:#e2e8f0; --text2:rgba(255,255,255,0.5); --text3:rgba(255,255,255,0.3);
+      --card:#111118;
+    }
+    [data-theme="light"] {
+      --bg:#f5f5f7; --bg2:#ffffff; --bg3:#f0f0f5;
+      --border:rgba(0,0,0,0.08); --border2:rgba(0,0,0,0.14);
+      --text:#1a1a2e; --text2:rgba(0,0,0,0.5); --text3:rgba(0,0,0,0.35);
+      --card:#ffffff;
+    }
+
+    body { background:var(--bg); color:var(--text); min-height:100vh; }
+
+    @keyframes fadeInUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes gradientShift { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+    @keyframes fillBar { from{width:0%} to{width:var(--w)} }
+    @keyframes scoreCount { from{opacity:0;transform:scale(0.7)} to{opacity:1;transform:scale(1)} }
+
+    .fade-in { animation:fadeInUp 0.5s ease forwards; opacity:0; }
+    .hero-gradient { background:linear-gradient(135deg,#1a1a2e,#16213e,#0f3460,#533483); background-size:300% 300%; animation:gradientShift 8s ease infinite; }
+
+    .card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:24px; }
+
+    .theme-toggle { width:52px;height:28px;background:rgba(255,255,255,0.15);border-radius:99px;position:relative;cursor:pointer;border:1px solid rgba(255,255,255,0.25); }
+    .theme-toggle .knob { position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform 0.3s;display:flex;align-items:center;justify-content:center;font-size:11px; }
+    [data-theme="light"] .theme-toggle .knob { transform:translateX(24px); }
+
+    .back-btn { background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fff;padding:8px 16px;border-radius:10px;cursor:pointer;font-size:13px;transition:background 0.2s; }
+    .back-btn:hover { background:rgba(255,255,255,0.2); }
+
+    .score-ring { width:120px;height:120px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-direction:column;border:4px solid; animation:scoreCount 0.8s ease forwards; }
+
+    .bar-fill { animation:fillBar 1.2s ease forwards;animation-delay:0.4s;width:0%;height:100%;border-radius:4px; }
+
+    .action-btn { padding:12px 24px;border-radius:12px;font-size:14px;font-weight:500;cursor:pointer;transition:all 0.2s;border:none; }
+    .btn-shortlist { background:rgba(16,185,129,0.15);color:#10b981;border:1px solid rgba(16,185,129,0.4); }
+    .btn-shortlist:hover { background:rgba(16,185,129,0.3); }
+    .btn-decline  { background:rgba(239,68,68,0.12);color:#ef4444;border:1px solid rgba(239,68,68,0.3); }
+    .btn-decline:hover  { background:rgba(239,68,68,0.25); }
+    .btn-back { background:var(--bg3);color:var(--text2);border:1px solid var(--border2); }
+    .btn-back:hover { background:var(--border2); }
+
+    .answer-block { background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px; }
+    .answer-block .q { font-size:12px;color:var(--text3);margin-bottom:6px; }
+    .answer-block .a { font-size:14px;color:var(--text);line-height:1.6; }
+
+    .badge-shortlist { background:rgba(16,185,129,0.15);color:#10b981;border:1px solid rgba(16,185,129,0.3); }
+    .badge-review    { background:rgba(245,158,11,0.15); color:#f59e0b;border:1px solid rgba(245,158,11,0.3); }
+    .badge-declined  { background:rgba(239,68,68,0.15);  color:#ef4444;border:1px solid rgba(239,68,68,0.3); }
+  </style>
+</head>
+<body>
+
+<!-- ШАПКА -->
+<header class="hero-gradient" style="padding:18px 32px;display:flex;align-items:center;justify-content:space-between;">
+  <div style="display:flex;align-items:center;gap:12px;">
+    <button class="back-btn" onclick="location.href='index.html'">← Назад</button>
+    <span style="color:rgba(255,255,255,0.5);font-size:13px;">TalentRadar — Карточка кандидата</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <span style="font-size:12px;color:rgba(255,255,255,0.7);" id="theme-label">🌙 Тёмная</span>
+    <div class="theme-toggle" onclick="toggleTheme()">
+      <div class="knob" id="theme-knob">🌙</div>
+    </div>
+  </div>
+</header>
+
+<!-- КОНТЕНТ -->
+<div style="max-width:1100px;margin:0 auto;padding:32px;" id="main-content">
+
+  <!-- Верхняя секция: аватар + общий балл + кнопки -->
+  <div class="card fade-in" style="display:flex;align-items:center;gap:28px;margin-bottom:20px;flex-wrap:wrap;">
+    <div id="avatar-circle" style="width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:700;flex-shrink:0;"></div>
+    <div style="flex:1;">
+      <h2 id="cand-name" style="font-size:22px;font-weight:700;margin:0 0 4px;color:var(--text);"></h2>
+      <p id="cand-username" style="font-size:14px;color:var(--text3);margin:0 0 8px;"></p>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span id="status-badge" style="padding:4px 12px;border-radius:99px;font-size:12px;font-weight:500;"></span>
+        <span id="ai-badge" style="padding:4px 12px;border-radius:99px;font-size:12px;"></span>
+        <span id="cand-date" style="font-size:12px;color:var(--text3);"></span>
+      </div>
+    </div>
+
+    <!-- Общий балл -->
+    <div id="score-ring" class="score-ring" style="flex-shrink:0;">
+      <div id="score-num" style="font-size:32px;font-weight:700;"></div>
+      <div style="font-size:11px;color:var(--text2);margin-top:2px;">из 100</div>
+    </div>
+
+    <!-- Кнопки действий -->
+    <div style="display:flex;flex-direction:column;gap:10px;flex-shrink:0;">
+      <button class="action-btn btn-shortlist" onclick="addToShortlist()">🌟 В Shortlist</button>
+      <button class="action-btn btn-decline"   onclick="declineCandidate()">✕ Отказать</button>
+      <button class="action-btn btn-back"      onclick="location.href='index.html'">← К списку</button>
+    </div>
+  </div>
+
+  <!-- Средняя секция: radar chart + критерии -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;">
+
+    <!-- Radar Chart -->
+    <div class="card fade-in" style="animation-delay:0.1s;">
+      <h3 style="font-size:15px;font-weight:600;margin:0 0 16px;color:var(--text);">Профиль кандидата</h3>
+      <div style="max-width:280px;margin:0 auto;">
+        <canvas id="radarChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Критерии с прогресс-барами -->
+    <div class="card fade-in" style="animation-delay:0.2s;">
+      <h3 style="font-size:15px;font-weight:600;margin:0 0 20px;color:var(--text);">Детальная оценка</h3>
+      <div id="criteria-bars"></div>
+      <div style="margin-top:20px;padding:14px;background:var(--bg2);border-radius:12px;border:1px solid var(--border);">
+        <div style="font-size:12px;color:var(--text3);margin-bottom:6px;">Вывод AI-системы:</div>
+        <div id="ai-summary" style="font-size:13px;color:var(--text);line-height:1.6;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ответы кандидата -->
+  <div class="card fade-in" style="animation-delay:0.3s;">
+    <h3 style="font-size:15px;font-weight:600;margin:0 0 16px;color:var(--text);">Ответы из интервью</h3>
+    <div id="answers-list"></div>
+  </div>
+
+</div>
+
+<script>
+// ── ДАННЫЕ (те же что в index.html) ──────────────────────────────
+const allCandidates = [
+  { id:1,  name:"Айгерим Сейткали", username:"aigerim_s",  score:91, leadership:23, growth:24, motivation:25, authenticity:19, status:"shortlist", ai_text:false, date:"12.05.2025",
+    summary:"Исключительный лидерский потенциал. Конкретные примеры инициатив и реального влияния на команду. Высокая мотивация совпадает с миссией inVision U.",
+    answers:[
+      { q:"Расскажи о себе и чём занимаешься", a:"Я учусь в 11 классе и параллельно веду волонтёрский проект по обучению цифровой грамотности в сельских школах. Уже охватили 3 района." },
+      { q:"Расскажи про момент когда ты что-то изменил(а)", a:"В прошлом году заметила что наша школьная библиотека пустует. Организовала книжный клуб, привлекла 40 учеников, директор выделил бюджет на новые книги." },
+      { q:"Что тебя злит и что ты делаешь с этим", a:"Злит что умные ребята из сёл не могут получить качественное образование. Поэтому и создала свой проект — хочу это изменить." },
+      { q:"Ситуация когда что-то не получилось", a:"Первый грант не выиграла. Переработала заявку, нашла ментора, подала снова — получила. Провал научил меня задавать правильные вопросы." },
+      { q:"Почему именно inVision U", a:"Хочу получить инструменты для масштабирования моего проекта. inVision U — единственное место где учат именно создавать изменения, а не просто получать знания." },
+    ]
+  },
+  { id:2,  name:"Данияр Ахметов",   username:"daniyar_a",  score:84, leadership:21, growth:22, motivation:22, authenticity:19, status:"shortlist", ai_text:false, date:"13.05.2025",
+    summary:"Сильная траектория роста. От сложного старта к значимым достижениям. Высокая мотивация и ясное видение своего пути.",
+    answers:[
+      { q:"Расскажи о себе", a:"Занимаюсь программированием с 14 лет. Сейчас разрабатываю приложение для фермеров чтобы они могли продавать напрямую без посредников." },
+      { q:"Момент когда ты что-то изменил", a:"Когда понял что наш аул не имеет интернета — поднял вопрос на местном уровне, помог привлечь провайдера. Теперь 200 семей онлайн." },
+      { q:"Что тебя злит", a:"Что технологии есть, но доступ к ним несправедливо распределён. Работаю над этим каждый день." },
+      { q:"Когда что-то не получилось", a:"Первая версия приложения не взлетела — никто не скачал. Поехал в поля, поговорил с фермерами, переделал интерфейс. Сейчас 80 активных пользователей." },
+      { q:"Почему inVision U", a:"Нужна система и менторы чтобы выйти за пределы Казахстана. Верю что inVision U поможет масштабироваться." },
+    ]
+  },
+  { id:3,  name:"Мадина Касымова",  username:"madina_k",   score:78, leadership:19, growth:20, motivation:21, authenticity:18, status:"shortlist", ai_text:false, date:"14.05.2025",
+    summary:"Чёткое предпринимательское мышление. Реальный опыт запуска проектов. Хорошее совпадение ценностей с программой.",
+    answers:[
+      { q:"Расскажи о себе", a:"Запустила свой небольшой бизнес по производству экологичной упаковки. Работаем с 5 местными магазинами." },
+      { q:"Момент когда ты что-то изменил", a:"Убедила родителей разрешить мне взять кредит на оборудование. Риск оправдался — окупились за 4 месяца." },
+      { q:"Что тебя злит", a:"Что предпринимателям в Казахстане очень сложно с документами и бюрократией. Хочу это изменить через advocasy." },
+      { q:"Когда не получилось", a:"Первый клиент отказался в последний момент. Было больно, но нашла трёх новых за неделю." },
+      { q:"Почему inVision U", a:"Хочу научиться строить системы а не просто бизнес. И найти единомышленников." },
+    ]
+  },
+  { id:4,  name:"Арман Берсимбаев", username:"arman_b",    score:72, leadership:18, growth:19, motivation:18, authenticity:17, status:"review",    ai_text:false, date:"15.05.2025",
+    summary:"Перспективный кандидат с хорошим потенциалом. Рекомендуется дополнительное интервью для уточнения мотивации.",
+    answers:[
+      { q:"Расскажи о себе", a:"Увлекаюсь дебатами и общественной деятельностью. Президент школьного совета уже два года." },
+      { q:"Момент когда ты что-то изменил", a:"Добился введения психологической поддержки в нашей школе после того как заметил проблему среди одноклассников." },
+      { q:"Что тебя злит", a:"Равнодушие. Когда люди видят проблему и ничего не делают." },
+      { q:"Когда не получилось", a:"Провалил важный турнир по дебатам. Месяц анализировал ошибки и занял первое место на следующем." },
+      { q:"Почему inVision U", a:"Хочу развить лидерские навыки и получить сеть контактов для будущих проектов." },
+    ]
+  },
+  { id:5,  name:"Жансая Нурланова", username:"zhansaya_n", score:68, leadership:16, growth:18, motivation:19, authenticity:15, status:"review",    ai_text:true,  date:"15.05.2025",
+    summary:"Интересные идеи, но эссе показывает признаки генерации ИИ. Живые ответы в боте более искренние — рекомендуется личное интервью.",
+    answers:[
+      { q:"Расскажи о себе", a:"Я являюсь целеустремлённой личностью с глубоким интересом к социальным инновациям и устойчивому развитию общества." },
+      { q:"Момент когда ты что-то изменил", a:"Посредством организации культурного мероприятия мне удалось объединить представителей различных этнических групп нашего региона." },
+      { q:"Что тебя злит", a:"Меня глубоко беспокоит проблема неравенства в образовании и отсутствие равных возможностей для молодёжи." },
+      { q:"Когда не получилось", a:"Столкнувшись с трудностями в реализации проекта, я провела детальный анализ ошибок и извлекла ценные уроки для дальнейшего развития." },
+      { q:"Почему inVision U", a:"inVision U представляет уникальную возможность для всестороннего развития моего потенциала и реализации амбициозных целей." },
+    ]
+  },
+  { id:6,  name:"Тимур Сагинтаев",  username:"timur_s",    score:65, leadership:15, growth:17, motivation:18, authenticity:15, status:"review",    ai_text:false, date:"16.05.2025",
+    summary:"Средний уровень по всем критериям. Есть потенциал, но недостаточно конкретных примеров лидерства.",
+    answers:[
+      { q:"Расскажи о себе", a:"Занимаюсь спортом и немного программированием. Хочу стать предпринимателем." },
+      { q:"Момент когда ты что-то изменил", a:"Организовал соревнования по баскетболу в районе. Участвовало около 50 человек." },
+      { q:"Что тебя злит", a:"Когда люди не верят в молодёжь и говорят что мы ничего не можем." },
+      { q:"Когда не получилось", a:"Не поступил в один университет. Расстроился, но пересмотрел планы." },
+      { q:"Почему inVision U", a:"Слышал много хорошего. Хочу попробовать и посмотреть что из этого выйдет." },
+    ]
+  },
+  { id:7,  name:"Аяулым Джаксыбек",username:"ayaulym_d",  score:58, leadership:13, growth:16, motivation:16, authenticity:13, status:"review",    ai_text:false, date:"17.05.2025",
+    summary:"Недостаточно примеров реального лидерства. Мотивация декларативная, не подкреплённая действиями.",
+    answers:[
+      { q:"Расскажи о себе", a:"Учусь хорошо, увлекаюсь искусством. Хочу изменить мир к лучшему." },
+      { q:"Момент когда ты что-то изменил", a:"Помогала организовывать школьный концерт." },
+      { q:"Что тебя злит", a:"Несправедливость и бедность." },
+      { q:"Когда не получилось", a:"Когда не получила главную роль в спектакле. Но продолжила заниматься." },
+      { q:"Почему inVision U", a:"Хочу получить грант и хорошее образование." },
+    ]
+  },
+  { id:8,  name:"Нурлан Оспанов",   username:"nurlan_o",   score:45, leadership:10, growth:12, motivation:13, authenticity:10, status:"declined",  ai_text:true,  date:"18.05.2025",
+    summary:"Слабая мотивация, шаблонные ответы. Высокая вероятность использования ИИ при написании эссе.",
+    answers:[
+      { q:"Расскажи о себе", a:"Я многогранная личность с широким кругом интересов и стремлением к самосовершенствованию." },
+      { q:"Момент когда ты что-то изменил", a:"Я внёс значительный вклад в развитие командного духа в нашем учебном заведении." },
+      { q:"Что тебя злит", a:"Меня беспокоят глобальные проблемы современного общества требующие немедленного решения." },
+      { q:"Когда не получилось", a:"Неудачный опыт послужил мощным катализатором для моего личностного роста." },
+      { q:"Почему inVision U", a:"inVision U — это идеальная платформа для реализации моего высокого потенциала." },
+    ]
+  },
+  { id:9,  name:"Камила Рахимова",  username:"kamila_r",   score:38, leadership:8,  growth:10, motivation:11, authenticity:9,  status:"declined",  ai_text:false, date:"19.05.2025",
+    summary:"Не соответствует критериям программы. Низкий уровень по всем показателям.",
+    answers:[
+      { q:"Расскажи о себе", a:"Обычная студентка." },
+      { q:"Момент когда ты что-то изменил", a:"Не могу вспомнить конкретного случая." },
+      { q:"Что тебя злит", a:"Многое." },
+      { q:"Когда не получилось", a:"Часто не получается." },
+      { q:"Почему inVision U", a:"Сказали что здесь дают грант." },
+    ]
+  },
+  { id:10, name:"Серик Байжанов",   username:"serik_b",    score:30, leadership:7,  growth:8,  motivation:9,  authenticity:6,  status:"declined",  ai_text:true,  date:"20.05.2025",
+    summary:"Минимальная вовлечённость. Эссе сгенерировано ИИ. Не рекомендуется к рассмотрению.",
+    answers:[
+      { q:"Расскажи о себе", a:"Я представляю собой синтез академических достижений и практического опыта." },
+      { q:"Момент когда ты что-то изменил", a:"Трансформировал подход к командной работе посредством внедрения инновационных методологий." },
+      { q:"Что тебя злит", a:"Стагнация и нежелание общества принимать прогрессивные изменения." },
+      { q:"Когда не получилось", a:"Временные неудачи воспринимаю как неотъемлемую часть пути к успеху." },
+      { q:"Почему inVision U", a:"Данная программа представляет оптимальную среду для максимальной самореализации." },
+    ]
+  },
+];
+
+const avatarColors = [
+  ["#818cf8","#312e81"],["#34d399","#064e3b"],["#fbbf24","#78350f"],
+  ["#f472b6","#831843"],["#60a5fa","#1e3a8a"],["#a78bfa","#4c1d95"],
+];
+
+// ── ПОЛУЧАЕМ ID ИЗ URL ────────────────────────────────────────────
+const urlParams = new URLSearchParams(window.location.search);
+const candidateId = parseInt(urlParams.get("id")) || 1;
+const c = allCandidates.find(x => x.id === candidateId) || allCandidates[0];
+const colorIdx = (candidateId - 1) % avatarColors.length;
+const [fg, bg] = avatarColors[colorIdx];
+
+// ── ТЕМА ─────────────────────────────────────────────────────────
+function toggleTheme() {
+  const html = document.documentElement;
+  const isDark = html.getAttribute("data-theme") === "dark";
+  html.setAttribute("data-theme", isDark ? "light" : "dark");
+  document.getElementById("theme-knob").textContent  = isDark ? "☀️" : "🌙";
+  document.getElementById("theme-label").textContent = isDark ? "☀️ Светлая" : "🌙 Тёмная";
+  updateChart();
+}
+
+// ── ЗАПОЛНЯЕМ СТРАНИЦУ ────────────────────────────────────────────
+function renderPage() {
+  const initials = c.name.split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase();
+  const scoreColor = c.score>=80?"#10b981":c.score>=60?"#f59e0b":"#ef4444";
+
+  // Аватар
+  const av = document.getElementById("avatar-circle");
+  av.style.background = bg;
+  av.style.color = fg;
+  av.textContent = initials;
+
+  // Имя
+  document.getElementById("cand-name").textContent = c.name;
+  document.getElementById("cand-username").textContent = `@${c.username} · ${c.date}`;
+
+  // Статус бейдж
+  const sb = document.getElementById("status-badge");
+  const statusMap = { shortlist:["badge-shortlist","🌟 Shortlist"], review:["badge-review","🔍 На рассмотрении"], declined:["badge-declined","✕ Отказ"] };
+  const [cls, txt] = statusMap[c.status] || ["badge-review","—"];
+  sb.className = cls;
+  sb.style.cssText += "padding:4px 12px;border-radius:99px;font-size:12px;font-weight:500;";
+  sb.textContent = txt;
+
+  // AI бейдж
+  const ab = document.getElementById("ai-badge");
+  if (c.ai_text) {
+    ab.style.cssText = "padding:4px 12px;border-radius:99px;font-size:12px;background:rgba(239,68,68,0.12);color:#ef4444;border:1px solid rgba(239,68,68,0.3);";
+    ab.textContent = "🤖 Обнаружен ИИ-текст";
+  } else {
+    ab.style.cssText = "padding:4px 12px;border-radius:99px;font-size:12px;background:rgba(16,185,129,0.12);color:#10b981;border:1px solid rgba(16,185,129,0.3);";
+    ab.textContent = "✍️ Живой текст";
+  }
+
+  // Score ring
+  const ring = document.getElementById("score-ring");
+  ring.style.borderColor = scoreColor;
+  document.getElementById("score-num").style.color = scoreColor;
+  document.getElementById("score-num").textContent = c.score;
+
+  // Критерии с барами
+  const criteria = [
+    { label:"Лидерский потенциал", value:c.leadership, max:25, color:"#818cf8" },
+    { label:"Траектория роста",    value:c.growth,     max:25, color:"#34d399" },
+    { label:"Мотивация / ценности",value:c.motivation, max:25, color:"#fbbf24" },
+    { label:"Аутентичность",       value:c.authenticity,max:25, color:"#f472b6" },
+  ];
+  document.getElementById("criteria-bars").innerHTML = criteria.map(cr=>`
+    <div style="margin-bottom:16px;">
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+        <span style="font-size:13px;color:var(--text2);">${cr.label}</span>
+        <span style="font-size:13px;font-weight:600;color:${cr.color};">${cr.value}/${cr.max}</span>
+      </div>
+      <div style="height:8px;background:var(--bg3);border-radius:4px;overflow:hidden;">
+        <div class="bar-fill" style="--w:${Math.round(cr.value/cr.max*100)}%;background:${cr.color};"></div>
+      </div>
+    </div>`).join("");
+
+  // Вывод AI
+  document.getElementById("ai-summary").textContent = c.summary;
+
+  // Ответы
+  document.getElementById("answers-list").innerHTML = c.answers.map(a=>`
+    <div class="answer-block">
+      <div class="q">❓ ${a.q}</div>
+      <div class="a">${a.a}</div>
+    </div>`).join("");
+}
+
+// ── RADAR CHART ───────────────────────────────────────────────────
+let radarChart = null;
+
+function updateChart() {
+  const isDark = document.documentElement.getAttribute("data-theme") === "dark";
+  const gridColor = isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)";
+  const labelColor = isDark ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.6)";
+
+  if (radarChart) radarChart.destroy();
+
+  radarChart = new Chart(document.getElementById("radarChart"), {
+    type: "radar",
+    data: {
+      labels: ["Лидерство","Рост","Мотивация","Аутентичность"],
+      datasets: [{
+        data: [c.leadership, c.growth, c.motivation, c.authenticity],
+        backgroundColor: "rgba(129,140,248,0.2)",
+        borderColor: "#818cf8",
+        borderWidth: 2,
+        pointBackgroundColor: "#818cf8",
+        pointRadius: 4,
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        r: {
+          min: 0, max: 25,
+          ticks: { stepSize:5, color:labelColor, backdropColor:"transparent", font:{size:10} },
+          grid: { color:gridColor },
+          angleLines: { color:gridColor },
+          pointLabels: { color:labelColor, font:{size:12} },
+        }
+      },
+      plugins: { legend:{ display:false } },
+      animation: { duration:1000 },
+    }
+  });
+}
+
+// ── ДЕЙСТВИЯ ──────────────────────────────────────────────────────
+function addToShortlist() {
+  alert(`✅ ${c.name} добавлен(а) в Shortlist!`);
+}
+function declineCandidate() {
+  if (confirm(`Отказать ${c.name}?`)) {
+    alert("Статус обновлён.");
+    location.href = "index.html";
+  }
+}
+
+// ── СТАРТ ─────────────────────────────────────────────────────────
+renderPage();
+updateChart();
+</script>
+</body>
+</html>

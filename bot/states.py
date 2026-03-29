@@ -1,0 +1,1 @@
+NAME, AGE, CITY, SCHOOL, INTERVIEW = range(5)

@@ -10,7 +10,6 @@
 ![Python](https://img.shields.io/badge/Python-3.11-3776AB?style=flat-square&logo=python&logoColor=white)
 ![Telegram](https://img.shields.io/badge/Telegram-Bot-26A5E4?style=flat-square&logo=telegram&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-Backend-009688?style=flat-square&logo=fastapi&logoColor=white)
-![Claude API](https://img.shields.io/badge/Claude-AI%20Core-D97757?style=flat-square&logo=anthropic&logoColor=white)
 ![React](https://img.shields.io/badge/React-Dashboard-61DAFB?style=flat-square&logo=react&logoColor=black)
 ![License](https://img.shields.io/badge/License-MIT-lightgray?style=flat-square)
 

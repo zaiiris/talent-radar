@@ -1,99 +1,171 @@
-# TalentRadar — система обнаружения потенциала
+<p align="center">
+  <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=900&q=80" width="100%" alt="TalentRadar banner"/>
+</p>
 
-> Мы ищем человека, а не заявку.
+<h1 align="center">🎯 TalentRadar</h1>
 
-TalentRadar — это интеллектуальная система отбора талантливых кандидатов. Вместо скучной фильтрации резюме она раскрывает потенциал каждого через адаптивный диалог и оценивает не только то, кто кандидат сейчас, но и куда он движется.
+<p align="center">
+  <b>AI-система оценки кандидатов — находим потенциал, а не фильтруем резюме</b><br/>
+  Создано на Zerde Hackathon 2025
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3.11-3776AB?style=for-the-badge&logo=python&logoColor=white"/>
+  <img src="https://img.shields.io/badge/Telegram-Bot-26A5E4?style=for-the-badge&logo=telegram&logoColor=white"/>
+  <img src="https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white"/>
+  <img src="https://img.shields.io/badge/Claude_API-D97757?style=for-the-badge&logo=anthropic&logoColor=white"/>
+  <img src="https://img.shields.io/badge/License-MIT-gray?style=for-the-badge"/>
+</p>
 
 ---
 
-##  Что умеет система
+## 💡 О проекте
 
-- **Адаптивное интервью** — Telegram-бот задаёт умные вопросы, подстраиваясь под каждого кандидата
-- **Оценка траектории роста** — система смотрит на динамику, а не только на текущий уровень
-- **Детектор ИИ-текста** — определяет, написал ли кандидат эссе сам или использовал ChatGPT
-- **Прозрачный дашборд** — комиссия видит не просто баллы, а объяснение каждой оценки
+Большинство систем отбора ранжируют заявки по ключевым словам. **TalentRadar** работает иначе:
+
+> Мы не фильтруем — мы **раскрываем** человека.
+
+Система проводит адаптивное интервью через Telegram, оценивает **вектор роста** кандидата и выдаёт комиссии прозрачный, объяснимый результат — не чёрный ящик.
 
 ---
 
-##  Структура проекта
+## ✨ Ключевые возможности
+
+<table>
+<tr>
+<td width="50%">
+
+### 🤖 Адаптивный бот-интервьюер
+Telegram-бот анализирует каждый ответ и подбирает следующий вопрос индивидуально. Никаких заготовленных шаблонов — живой диалог.
+
+</td>
+<td width="50%">
+
+### 📈 Оценка траектории роста
+Система смотрит не на то, кем ты являешься сейчас, а **куда ты движешься**. Победитель олимпиады, который три года назад был троечником — сильный сигнал.
+
+</td>
+</tr>
+<tr>
+<td width="50%">
+
+### 🔍 AI-детектор подлинности
+Сравниваем эссе кандидата с его ответами в боте. Если эссе написал ChatGPT — система это заметит.
+
+</td>
+<td width="50%">
+
+### 📊 Прозрачный дашборд
+Каждый балл раскладывается по факторам: «83 балла, потому что: лидерский потенциал +34, рост +28, аутентичность +21». Комиссия видит логику.
+
+</td>
+</tr>
+</table>
+
+---
+
+## 🔄 Как это работает
+
+```
+Кандидат открывает Telegram-бот
+  → Проходит адаптивное интервью (7–10 вопросов)
+  → ИИ оценивает по 4 измерениям
+  → Комиссия открывает дашборд с ранжированным списком
+  → Формирует shortlist одним кликом
+```
+
+<p align="center">
+  <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&q=80" width="80%" alt="dashboard analytics"/>
+</p>
+
+---
+
+## 🧠 Модель оценки
+
+Каждый кандидат оценивается по **4 измерениям**:
+
+| # | Измерение | Что оцениваем |
+|---|-----------|----------------|
+| 1 | 🧭 Лидерский потенциал | Инициатива, стиль принятия решений, поведение в команде |
+| 2 | 📈 Траектория роста | Скорость развития по временным меткам в анкете |
+| 3 | ✅ Аутентичность | Согласованность эссе и ответов в боте |
+| 4 | 💬 Ясность мышления | Структура и глубина ответов в интервью |
+
+Итоговый балл — взвешенная сумма. Веса настраиваются в `backend/scoring.py`.
+
+---
+
+## 🛠 Технологии
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white"/>
+  <img src="https://img.shields.io/badge/FastAPI-009688?style=flat-square&logo=fastapi&logoColor=white"/>
+  <img src="https://img.shields.io/badge/Telegram-26A5E4?style=flat-square&logo=telegram&logoColor=white"/>
+  <img src="https://img.shields.io/badge/Anthropic-D97757?style=flat-square&logo=anthropic&logoColor=white"/>
+  <img src="https://img.shields.io/badge/React-61DAFB?style=flat-square&logo=react&logoColor=black"/>
+  <img src="https://img.shields.io/badge/Railway-0B0D0E?style=flat-square&logo=railway&logoColor=white"/>
+</p>
+
+---
+
+## 📁 Структура проекта
+
 ```
 talent-radar/
-├── bot/
-│   ├── main.py
-│   ├── handlers.py
-│   ├── questions.py
-│   ├── adaptive.py
-│   └── requirements.txt
-├── backend/
-│   ├── app.py
-│   ├── scoring.py
-│   ├── nlp_analysis.py
-│   ├── ai_detector.py
-│   ├── models.py
-│   └── requirements.txt
-├── frontend/
-│   ├── index.html
-│   ├── dashboard.js
-│   ├── candidate.js
-│   ├── radar-chart.js
-│   └── styles.css
-├── docs/
-│   ├── README.md
-│   ├── SCORING.md
-│   └── API.md
-├── .env.example
-├── .gitignore
-└── requirements.txt
+├── bot/            # Telegram-бот с адаптивной логикой интервью
+├── backend/        # FastAPI-сервер и движок оценки
+├── frontend/       # Дашборд для комиссии (React)
+├── docs/           # Архитектурные схемы и решения
+├── .env.example    # Шаблон переменных окружения
+└── README.md
 ```
 
 ---
 
-## ⚙️ Технологии
+## 🚀 Быстрый старт
 
-| Часть проекта | Технологии |
-|---|---|
-| Telegram-бот | Python, python-telegram-bot |
-| Backend / API | Python, FastAPI |
-| ИИ-анализ | Anthropic Claude API |
-| Frontend | HTML, CSS, JavaScript |
-| Деплой | Railway / Render |
+### 1. Клонируй репозиторий
 
----
+```bash
+git clone https://github.com/zaiiris/talent-radar.git
+cd talent-radar
+```
 
-##  Как работает оценка
+### 2. Настрой переменные окружения
 
-| Компонент | Вес | Описание |
-|---|---|---|
-|  Лидерский потенциал | 34% | Анализ ответов о лидерстве и инициативе |
-|  Траектория роста | 28% | Динамика достижений во времени |
-|  Аутентичность | 21% | Оригинальность текста, отсутствие ИИ-генерации |
-|  Релевантность | 17% | Соответствие требованиям программы |
+```bash
+cp .env.example .env
+# Вставь свои ключи в .env
+```
 
----
+`.env.example`:
+```
+TELEGRAM_TOKEN=твой_токен_от_botfather
+ANTHROPIC_API_KEY=твой_ключ_anthropic
+```
 
-##  Быстрый старт
+### 3. Установи зависимости и запусти бота
 
-1. Клонируй репозиторий
-2. Скопируй `.env.example` → `.env` и вставь свои ключи
-3. Установи зависимости: `pip install -r requirements.txt`
-4. Запусти бота: `python bot/main.py`
+```bash
+cd bot
+pip install -r requirements.txt
+python main.py
+```
 
----
-
-##  Команда
-
-| Роль | Имя |
-|---|---|
-| ... | ... |
+Если видишь `✅ Бот запущен!` — всё работает. Открывай Telegram и пиши `/start`.
 
 ---
 
-##  Лицензия
+## 👥 Команда
 
-MIT License
+| Имя | Роль |
+|-----|------|
+| — | — |
 
- Команда
-РольИмя..................
+> Создано с ❤️ на Zerde Hackathon 2025
 
-Лицензия
-MIT License — используй свободно.
+---
+
+## 📄 Лицензия
+
+MIT — используй свободно.

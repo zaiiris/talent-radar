@@ -1,82 +1,103 @@
 from telegram import Update, ReplyKeyboardRemove
 from telegram.ext import ContextTypes, ConversationHandler
-from questions import get_next_question, should_end_interview, FIRST_QUESTION
-from adaptive import analyze_candidate, save_candidate
-from states import NAME, AGE, CITY, SCHOOL, INTERVIEW
 
-async def start(update, context):
+from states import NAME, AGE, CITY, SCHOOL, INTERVIEW
+from questions import TEXTS, get_t, detect_language
+from adaptive import get_next_question, should_end, analyze_candidate, save_candidate
+
+
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     context.user_data.clear()
-    context.user_data["telegram_id"] = update.effective_user.id
+    context.user_data["telegram_id"]       = update.effective_user.id
     context.user_data["telegram_username"] = update.effective_user.username or ""
-    context.user_data["interview_history"] = []
+    context.user_data["history"]           = []
+    context.user_data["lang"]              = "ru"
     await update.message.reply_text(
-        "🎓 *Добро пожаловать в inVision U!*\n\n"
-        "Это официальная система подачи заявок на участие в программе. "
-        "Я проведу тебя через анкету — это займёт около 5 минут.\n\n"
-        "Для отмены напиши /cancel\n\n"
-        "━━━━━━━━━━━━━━━━━━━\n\n"
-        "Как тебя зовут? (Имя и Фамилия)",
+        TEXTS["ru"]["welcome"],
         parse_mode="Markdown"
     )
     return NAME
 
-async def get_name(update, context):
-    context.user_data["name"] = update.message.text.strip()
-    await update.message.reply_text("📅 Сколько тебе лет?")
+
+async def get_name(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    text = update.message.text.strip()
+    lang = detect_language(text)
+    context.user_data["lang"] = lang
+    context.user_data["name"] = text
+    await update.message.reply_text(get_t(context, "age"))
     return AGE
 
-async def get_age(update, context):
+
+async def get_age(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     age_text = update.message.text.strip()
     if not age_text.isdigit() or not (10 <= int(age_text) <= 35):
-        await update.message.reply_text("⚠️ Введи корректный возраст (от 10 до 35).")
+        await update.message.reply_text(get_t(context, "age_error"))
         return AGE
     context.user_data["age"] = age_text
-    await update.message.reply_text("🏙 Из какого ты города?")
+    await update.message.reply_text(get_t(context, "city"))
     return CITY
 
-async def get_city(update, context):
+
+async def get_city(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     context.user_data["city"] = update.message.text.strip()
-    await update.message.reply_text("🏫 В какой школе или университете ты учишься и в каком классе или курсе?")
+    await update.message.reply_text(get_t(context, "school"))
     return SCHOOL
 
-async def get_school(update, context):
+
+async def get_school(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     context.user_data["school"] = update.message.text.strip()
+    first_q = get_t(context, "first_q")
     await update.message.reply_text(
-        "Отлично! Теперь начнём интервью.\n\n" + FIRST_QUESTION,
+        get_t(context, "start_interview") + first_q,
         parse_mode="Markdown"
     )
-    context.user_data["interview_history"].append({"q": FIRST_QUESTION, "a": ""})
+    context.user_data["history"].append({"q": first_q, "a": ""})
     return INTERVIEW
 
-async def handle_interview(update, context):
+
+async def handle_interview(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     answer = update.message.text.strip()
-    history = context.user_data["interview_history"]
+    lang   = context.user_data.get("lang", "ru")
+
+    if not answer:
+        await update.message.reply_text(
+            {"ru": "⚠️ Пожалуйста, напиши свой ответ.",
+             "kz": "⚠️ Жауабыңды жаз.",
+             "en": "⚠️ Please write your answer."}.get(lang, "⚠️ Please write your answer.")
+        )
+        return INTERVIEW
+
+    history = context.user_data["history"]
     if history and history[-1]["a"] == "":
         history[-1]["a"] = answer
-    else:
-        history.append({"q": "", "a": answer})
 
-    if should_end_interview(history):
-        await update.message.reply_text("⏳ Обрабатываю твою анкету...", reply_markup=ReplyKeyboardRemove())
+    if should_end(context.user_data["history"]):
+        await update.message.reply_text(
+            get_t(context, "processing"),
+            reply_markup=ReplyKeyboardRemove()
+        )
         analysis = analyze_candidate(context.user_data)
         save_candidate(context.user_data, analysis)
         name = context.user_data.get("name", "")
         await update.message.reply_text(
-            f"🎉 *{name}, твоя анкета принята и сохранена!*\n\n"
-            "━━━━━━━━━━━━━━━━━━━\n\n"
-            "📋 Комиссия проведёт финальную оценку.\n\n"
-            "━━━━━━━━━━━━━━━━━━━\n\n"
-            "_Финальное решение принимает приёмная комиссия inVision U._\n\n"
-            "Желаем удачи! 🌟",
+            get_t(context, "done").format(name=name),
             parse_mode="Markdown"
         )
         return ConversationHandler.END
 
-    next_q = get_next_question([h for h in history if h["a"]], context.user_data["name"])
-    await update.message.reply_text(next_q, parse_mode="Markdown")
-    history.append({"q": next_q, "a": ""})
+    next_q = get_next_question(
+        context.user_data["history"],
+        context.user_data["name"],
+        lang
+    )
+    await update.message.reply_text(next_q)
+    context.user_data["history"].append({"q": next_q, "a": ""})
     return INTERVIEW
 
-async def cancel(update, context):
-    await update.message.reply_text("❌ Анкета отменена. Напиши /start чтобы начать заново.", reply_markup=ReplyKeyboardRemove())
+
+async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    await update.message.reply_text(
+        get_t(context, "cancelled"),
+        reply_markup=ReplyKeyboardRemove()
+    )
     return ConversationHandler.END

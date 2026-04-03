@@ -12,7 +12,7 @@ import google.generativeai as genai
 
 # =============================================
 TELEGRAM_TOKEN = "8607632393:AAHHjpT_qv66HerNzQHarFT51TGIoqVr_wU"
-GEMINI_API_KEY = "AIzaSyCBG1MWG2jF8ScmxmrIZdzvvVQ9isM3tQ4"
+GEMINI_API_KEY = "AIzaSyD1qDLyDIFDSeibWPsSAOWnh_y3XH9-bbo"
 RESULTS_FILE   = "candidates.json"
 # =============================================
 
@@ -27,6 +27,9 @@ logger = logging.getLogger(__name__)
 
 (NAME, AGE, CITY, SCHOOL, INTERVIEW) = range(5)
 
+# ─────────────────────────────────────────────
+# Тексты на 3 языках
+# ─────────────────────────────────────────────
 TEXTS = {
     "ru": {
         "welcome": (
@@ -144,6 +147,10 @@ TEXTS = {
 }
 
 
+# ─────────────────────────────────────────────
+# Вспомогательные функции
+# ─────────────────────────────────────────────
+
 def detect_language(text: str) -> str:
     kz_chars = set("әіңғүұқөһ")
     text_lower = text.lower()
@@ -173,6 +180,11 @@ def call_ai(prompt: str) -> str:
             logger.warning(f"Модель {model_name}: {e}")
     logger.error("AI failed completely — все модели недоступны")
     return None
+
+
+# ─────────────────────────────────────────────
+# Поведенческий анализ истории
+# ─────────────────────────────────────────────
 
 def build_history_context(history: list) -> dict:
     """
@@ -212,6 +224,10 @@ def build_history_context(history: list) -> dict:
         "q_num":            len(answered) + 1,
     }
 
+
+# ─────────────────────────────────────────────
+# Генерация следующего вопроса
+# ─────────────────────────────────────────────
 
 def get_next_question(history: list, name: str, lang: str) -> str:
     """
@@ -268,6 +284,9 @@ def get_next_question(history: list, name: str, lang: str) -> str:
     return fallback_list[max(0, idx)]
 
 
+# ─────────────────────────────────────────────
+# Логика завершения интервью
+# ─────────────────────────────────────────────
 
 def should_end(history: list) -> bool:
     answered = [h for h in history if h.get("a")]
@@ -281,6 +300,9 @@ def should_end(history: list) -> bool:
     return False
 
 
+# ─────────────────────────────────────────────
+# ФИХ 3 + ФИХ 4: Скоринг с explanations + усиленный AI-detection
+# ─────────────────────────────────────────────
 
 def analyze_candidate(data: dict) -> dict:
     lang    = data.get("lang", "ru")
@@ -370,6 +392,10 @@ def analyze_candidate(data: dict) -> dict:
     }
 
 
+# ─────────────────────────────────────────────
+# Сохранение результата
+# ─────────────────────────────────────────────
+
 def save_candidate(data: dict, analysis: dict):
     record = {
         "id":        f"candidate_{uuid.uuid4().hex}",
@@ -404,6 +430,11 @@ def save_candidate(data: dict, analysis: dict):
         f"Score: {analysis.get('total')} | "
         f"{analysis.get('recommendation')}"
     )
+
+
+# ─────────────────────────────────────────────
+# Telegram-хэндлеры
+# ─────────────────────────────────────────────
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     context.user_data.clear()
@@ -506,6 +537,11 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     )
     return ConversationHandler.END
 
+
+# ─────────────────────────────────────────────
+# Запуск
+# ─────────────────────────────────────────────
+
 def main():
     app = Application.builder().token(TELEGRAM_TOKEN).build()
     conv_handler = ConversationHandler(
@@ -526,4 +562,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

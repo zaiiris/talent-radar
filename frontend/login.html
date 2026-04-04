@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TalentRadar — Вход</title>
+  <link rel="stylesheet" href="css/styles.css"/>
+  <style>
+    /* Только для логин страницы */
+    .error-msg { color:#ef4444;font-size:12px;margin-top:6px;display:none; }
+    .spinner { width:18px;height:18px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:none;margin:0 auto; }
+    .feature-pill {
+      display:inline-flex;align-items:center;gap:6px;
+      padding:5px 12px;border-radius:99px;
+      background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);
+      font-size:12px;color:rgba(255,255,255,0.6);
+    }
+    .stat-float {
+      position:absolute;background:rgba(255,255,255,0.05);
+      border:1px solid rgba(255,255,255,0.10);border-radius:14px;
+      padding:14px 18px;backdrop-filter:blur(12px);
+      animation:float 7s ease-in-out infinite;
+    }
+    .stat-float:nth-child(6) { animation:floatB 9s ease-in-out infinite 1s; }
+    .stat-float:nth-child(7) { animation:float  6s ease-in-out infinite 2s; }
+  </style>
+</head>
+<body>
+<div class="login-bg">
+
+  <!-- Плавающие частицы -->
+  <div class="particle" style="width:300px;height:300px;top:-80px;left:-100px;opacity:.5;"></div>
+  <div class="particle" style="width:200px;height:200px;bottom:10%;right:-60px;opacity:.4;"></div>
+  <div class="particle" style="width:150px;height:150px;top:40%;left:10%;opacity:.3;"></div>
+  <div class="particle" style="width:100px;height:100px;bottom:20%;left:20%;opacity:.25;"></div>
+  <div class="particle" style="width:80px;height:80px;top:20%;right:15%;opacity:.2;"></div>
+
+  <!-- Плавающие стат-карточки (декор) -->
+  <div class="stat-float" style="top:12%;left:6%;color:#fff;">
+    <div style="font-size:22px;font-weight:700;color:#34d399;">847</div>
+    <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:2px;">заявок получено</div>
+  </div>
+  <div class="stat-float" style="bottom:18%;right:6%;color:#fff;">
+    <div style="font-size:22px;font-weight:700;color:#818cf8;">91%</div>
+    <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:2px;">точность AI-оценки</div>
+  </div>
+  <div class="stat-float" style="top:55%;left:4%;color:#fff;display:none;" id="stat3">
+    <div style="font-size:22px;font-weight:700;color:#f472b6;">3x</div>
+    <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:2px;">быстрее отбор</div>
+  </div>
+
+  <!-- Карточка логина -->
+  <div class="login-card">
+
+    <!-- Логотип -->
+    <div style="text-align:center;margin-bottom:32px;">
+      <div style="width:56px;height:56px;border-radius:16px;background:linear-gradient(135deg,#6366f1,#818cf8);display:flex;align-items:center;justify-content:center;font-size:26px;margin:0 auto 14px;box-shadow:0 8px 24px rgba(99,102,241,0.4);">🎓</div>
+      <h1 style="font-size:22px;font-weight:700;color:#fff;margin:0 0 6px;" id="login-title">Добро пожаловать</h1>
+      <p style="font-size:13px;color:rgba(255,255,255,0.45);margin:0;" id="login-sub">Система отбора кандидатов inVision U</p>
+    </div>
+
+    <!-- Переключатель языка -->
+    <div style="display:flex;justify-content:center;margin-bottom:24px;">
+      <div class="lang-switcher">
+        <button class="lang-btn active" data-lang="ru">RU</button>
+        <button class="lang-btn" data-lang="kz">KZ</button>
+        <button class="lang-btn" data-lang="en">EN</button>
+      </div>
+    </div>
+
+    <!-- Форма -->
+    <div style="margin-bottom:16px;">
+      <label id="lbl-email" style="font-size:12px;color:rgba(255,255,255,0.5);display:block;margin-bottom:6px;">Email</label>
+      <input type="email" id="inp-email" class="login-input" placeholder="admin@invision.kz" value="admin@invision.kz"/>
+    </div>
+    <div style="margin-bottom:8px;">
+      <label id="lbl-pass" style="font-size:12px;color:rgba(255,255,255,0.5);display:block;margin-bottom:6px;">Пароль</label>
+      <input type="password" id="inp-pass" class="login-input" placeholder="••••••••" value="demo1234"
+        onkeydown="if(event.key==='Enter')doLogin()"/>
+    </div>
+    <div class="error-msg" id="error-msg">Неверный email или пароль</div>
+
+    <button class="login-btn" id="login-btn" onclick="doLogin()" style="margin-top:20px;">
+      <span id="btn-text">Войти в систему</span>
+      <div class="spinner" id="spinner"></div>
+    </button>
+
+    <!-- Демо подсказка -->
+    <div style="margin-top:20px;text-align:center;">
+      <div id="login-hint" style="font-size:11px;color:rgba(255,255,255,0.3);margin-bottom:8px;">Доступ только для членов приёмной комиссии</div>
+      <div style="font-size:11px;color:rgba(255,255,255,0.22);" id="login-demo">Демо: admin@invision.kz / demo1234</div>
+    </div>
+
+    <!-- Фичи снизу -->
+    <div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:24px;padding-top:20px;border-top:1px solid rgba(255,255,255,0.06);">
+      <span class="feature-pill">🤖 AI-анализ</span>
+      <span class="feature-pill">📊 Radar chart</span>
+      <span class="feature-pill">🔒 Безопасно</span>
+      <span class="feature-pill">🌐 3 языка</span>
+    </div>
+  </div>
+</div>
+
+<script src="js/i18n.js"></script>
+<script>
+initLangSwitcher();
+
+function onLangChange() {
+  document.getElementById("login-title").textContent = t("loginTitle");
+  document.getElementById("login-sub").textContent   = t("loginSub");
+  document.getElementById("lbl-email").textContent   = t("loginEmail");
+  document.getElementById("lbl-pass").textContent    = t("loginPass");
+  document.getElementById("btn-text").textContent    = t("loginBtn");
+  document.getElementById("login-hint").textContent  = t("loginHint");
+  document.getElementById("login-demo").textContent  = t("loginDemo");
+  document.getElementById("inp-email").placeholder   = "admin@invision.kz";
+  document.getElementById("inp-pass").placeholder    = "••••••••";
+}
+onLangChange();
+
+function doLogin() {
+  const email = document.getElementById("inp-email").value.trim();
+  const pass  = document.getElementById("inp-pass").value.trim();
+  const btn   = document.getElementById("login-btn");
+  const spinner = document.getElementById("spinner");
+  const btnText = document.getElementById("btn-text");
+  const err   = document.getElementById("error-msg");
+
+  err.style.display = "none";
+  btnText.style.display = "none";
+  spinner.style.display = "block";
+  btn.disabled = true;
+
+  setTimeout(() => {
+    spinner.style.display = "none";
+    btnText.style.display = "block";
+    btn.disabled = false;
+
+    if (email === "admin@invision.kz" && pass === "demo1234") {
+      localStorage.setItem("tr_auth", "1");
+      window.location.href = "index.html";
+    } else {
+      err.style.display = "block";
+      err.textContent = currentLang === "en" ? "Invalid email or password"
+                      : currentLang === "kz" ? "Email немесе құпия сөз қате"
+                      : "Неверный email или пароль";
+    }
+  }, 1000);
+}
+
+// Показываем статкарточки с задержкой
+setTimeout(() => {
+  document.getElementById("stat3").style.display = "block";
+}, 800);
+</script>
+</body>
+</html>

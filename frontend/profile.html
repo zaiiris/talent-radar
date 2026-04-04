@@ -1,1 +1,228 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Профиль — TalentRadar</title>
+  <link rel="stylesheet" href="css/styles.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
 
+<header class="hero-gradient">
+  <div style="display:flex;align-items:center;gap:12px;">
+    <button class="back-btn" onclick="location.href='index.html'" id="hdr-back">← Назад</button>
+    <span style="color:rgba(255,255,255,0.45);font-size:13px;">TalentRadar · Профиль</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <div class="lang-switcher">
+      <button class="lang-btn" data-lang="ru">RU</button>
+      <button class="lang-btn" data-lang="kz">KZ</button>
+      <button class="lang-btn" data-lang="en">EN</button>
+    </div>
+    <span style="font-size:12px;color:rgba(255,255,255,0.7);" id="theme-label">🌙 Тёмная</span>
+    <div class="theme-toggle" onclick="toggleTheme()"><div class="knob" id="theme-knob">🌙</div></div>
+  </div>
+</header>
+
+<!-- HERO ПРОФИЛЯ -->
+<div class="profile-hero">
+  <div class="profile-avatar" id="prof-avatar">АН</div>
+  <h1 style="font-size:22px;font-weight:700;color:#fff;margin:0 0 4px;" id="prof-name">Айгуль Назарова</h1>
+  <p style="font-size:14px;color:rgba(255,255,255,0.5);margin:0 0 12px;" id="prof-role">Председатель приёмной комиссии</p>
+  <div style="display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;">
+    <span style="font-size:13px;color:rgba(255,255,255,0.4);">✉️ <span id="prof-email">a.nazarova@invision.kz</span></span>
+    <span style="font-size:13px;color:rgba(255,255,255,0.4);">🏛 <span id="prof-dept">inVision University · Алматы</span></span>
+    <span style="font-size:13px;color:rgba(255,255,255,0.4);">📅 <span id="prof-since">В системе с 2024</span></span>
+  </div>
+</div>
+
+<!-- ОСНОВНОЙ КОНТЕНТ -->
+<div style="max-width:960px;margin:0 auto;padding:28px 32px 48px;display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+
+  <!-- Статистика -->
+  <div class="card fade-in">
+    <h3 style="font-size:14px;font-weight:600;margin:0 0 18px;color:var(--text);">📊 Статистика сезона</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:20px;">
+      <div style="text-align:center;padding:14px;background:var(--bg2);border-radius:14px;border:1px solid var(--border);">
+        <div style="font-size:28px;font-weight:700;color:#818cf8;animation:countUp 0.8s ease forwards;" id="stat-decisions">47</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px;" id="stat-decisions-lbl">Решений принято</div>
+      </div>
+      <div style="text-align:center;padding:14px;background:var(--bg2);border-radius:14px;border:1px solid var(--border);">
+        <div style="font-size:28px;font-weight:700;color:#34d399;animation:countUp 0.8s ease .1s forwards;" id="stat-reviewed">124</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px;" id="stat-reviewed-lbl">Заявок просмотрено</div>
+      </div>
+      <div style="text-align:center;padding:14px;background:var(--bg2);border-radius:14px;border:1px solid var(--border);">
+        <div style="font-size:28px;font-weight:700;color:#fbbf24;animation:countUp 0.8s ease .2s forwards;" id="stat-accepted">38</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px;" id="stat-accepted-lbl">Принято</div>
+      </div>
+    </div>
+    <!-- Donut chart -->
+    <canvas id="donutChart" style="max-width:180px;margin:0 auto;display:block;"></canvas>
+    <p style="text-align:center;font-size:12px;color:var(--text3);margin-top:12px;" id="chart-caption">Распределение решений</p>
+  </div>
+
+  <!-- Активность -->
+  <div class="card fade-in" style="animation-delay:0.1s;">
+    <h3 style="font-size:14px;font-weight:600;margin:0 0 16px;color:var(--text);" id="activity-title">🕐 Последняя активность</h3>
+    <div id="activity-list">
+      <div class="activity-item">
+        <div class="activity-dot" style="background:#10b981;"></div>
+        <div>
+          <div style="font-size:13px;color:var(--text);">Айгерим Сейткали → Shortlist</div>
+          <div style="font-size:11px;color:var(--text3);">2 часа назад</div>
+        </div>
+      </div>
+      <div class="activity-item">
+        <div class="activity-dot" style="background:#818cf8;"></div>
+        <div>
+          <div style="font-size:13px;color:var(--text);">Данияр Ахметов → На рассмотрении</div>
+          <div style="font-size:11px;color:var(--text3);">5 часов назад</div>
+        </div>
+      </div>
+      <div class="activity-item">
+        <div class="activity-dot" style="background:#ef4444;"></div>
+        <div>
+          <div style="font-size:13px;color:var(--text);">Серик Байжанов → Отказ</div>
+          <div style="font-size:11px;color:var(--text3);">вчера, 14:32</div>
+        </div>
+      </div>
+      <div class="activity-item">
+        <div class="activity-dot" style="background:#10b981;"></div>
+        <div>
+          <div style="font-size:13px;color:var(--text);">Мадина Касымова → Shortlist</div>
+          <div style="font-size:11px;color:var(--text3);">вчера, 11:10</div>
+        </div>
+      </div>
+      <div class="activity-item">
+        <div class="activity-dot" style="background:#fbbf24;"></div>
+        <div>
+          <div style="font-size:13px;color:var(--text);">Жансая Нурланова → Флаг AI-текста</div>
+          <div style="font-size:11px;color:var(--text3);">2 дня назад</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Настройки профиля -->
+  <div class="card fade-in" style="animation-delay:0.2s;">
+    <h3 style="font-size:14px;font-weight:600;margin:0 0 18px;color:var(--text);">⚙️ Настройки</h3>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:12px;background:var(--bg2);border-radius:12px;border:1px solid var(--border);">
+        <span style="font-size:13px;color:var(--text2);">Тема интерфейса</span>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:12px;color:var(--text3);" id="theme-label-p">Тёмная</span>
+          <div class="theme-toggle" onclick="toggleTheme()" style="background:rgba(255,255,255,0.08);border-color:var(--border2);">
+            <div class="knob" id="theme-knob-p" style="background:var(--text);">🌙</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:12px;background:var(--bg2);border-radius:12px;border:1px solid var(--border);">
+        <span style="font-size:13px;color:var(--text2);">Язык</span>
+        <div class="lang-switcher" style="background:var(--bg3);border-color:var(--border2);">
+          <button class="lang-btn" data-lang="ru" style="color:var(--text2);">RU</button>
+          <button class="lang-btn" data-lang="kz" style="color:var(--text2);">KZ</button>
+          <button class="lang-btn" data-lang="en" style="color:var(--text2);">EN</button>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:12px;background:var(--bg2);border-radius:12px;border:1px solid var(--border);">
+        <span style="font-size:13px;color:var(--text2);">AI-уведомления</span>
+        <div style="padding:4px 12px;border-radius:99px;background:rgba(16,185,129,0.12);color:#10b981;font-size:12px;border:1px solid rgba(16,185,129,0.25);">✓ Включены</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Действия -->
+  <div class="card fade-in" style="animation-delay:0.3s;display:flex;flex-direction:column;gap:12px;justify-content:center;">
+    <button class="btn btn-primary" onclick="location.href='index.html'" style="width:100%;justify-content:center;padding:13px;">
+      📋 К дашборду
+    </button>
+    <button class="btn btn-green" onclick="location.href='shortlist.html'" style="width:100%;justify-content:center;padding:13px;" id="btn-shortlist-p">
+      🌟 Открыть Shortlist
+    </button>
+    <button class="btn btn-ghost" onclick="editProfile()" style="width:100%;justify-content:center;padding:13px;" id="btn-edit-p">
+      ✏️ Редактировать профиль
+    </button>
+    <button class="btn btn-danger" onclick="logout()" style="width:100%;justify-content:center;padding:13px;" id="btn-logout-p">
+      🚪 Выйти из системы
+    </button>
+  </div>
+
+</div>
+
+<script src="js/i18n.js"></script>
+<script>
+initLangSwitcher();
+
+function onLangChange() {
+  document.getElementById("hdr-back").textContent     = t("back");
+  document.getElementById("prof-name").textContent    = t("profileName");
+  document.getElementById("prof-role").textContent    = t("profileRole");
+  document.getElementById("prof-email").textContent   = t("profileEmail");
+  document.getElementById("prof-dept").textContent    = t("profileDept");
+  document.getElementById("prof-since").textContent   = t("profileSince");
+  document.getElementById("stat-decisions-lbl").textContent = t("profileDecisions");
+  document.getElementById("stat-reviewed-lbl").textContent  = t("profileReviewed");
+  document.getElementById("stat-accepted-lbl").textContent  = t("profileAccepted");
+  document.getElementById("activity-title").textContent     = t("recentActivity");
+  document.getElementById("btn-logout-p").innerHTML   = `🚪 ${t("profileLogout")}`;
+  document.getElementById("btn-edit-p").innerHTML     = `✏️ ${t("profileEdit")}`;
+  const tl = document.getElementById("theme-label");
+  const tld = document.getElementById("theme-label-p");
+  const isDark = document.documentElement.getAttribute("data-theme")==="dark";
+  if(tl) tl.textContent = isDark ? t("darkTheme") : t("lightTheme");
+  if(tld) tld.textContent = isDark ? t("darkTheme") : t("lightTheme");
+}
+
+function toggleTheme() {
+  const html = document.documentElement;
+  const isDark = html.getAttribute("data-theme")==="dark";
+  html.setAttribute("data-theme", isDark?"light":"dark");
+  ["theme-knob","theme-knob-p"].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.textContent = isDark?"☀️":"🌙";
+  });
+  onLangChange();
+  buildDonut();
+}
+
+// Donut chart
+let donutChart = null;
+function buildDonut() {
+  const isDark = document.documentElement.getAttribute("data-theme")==="dark";
+  const tc = isDark ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.6)";
+  if(donutChart) donutChart.destroy();
+  donutChart = new Chart(document.getElementById("donutChart"),{
+    type:"doughnut",
+    data:{
+      labels:["Shortlist","На рассмотр.","Отказ"],
+      datasets:[{
+        data:[38,47,39],
+        backgroundColor:["rgba(52,211,153,0.8)","rgba(129,140,248,0.8)","rgba(239,68,68,0.7)"],
+        borderColor:"transparent", borderWidth:0,
+      }]
+    },
+    options:{
+      responsive:true, cutout:"68%",
+      plugins:{ legend:{ position:"bottom", labels:{ color:tc, font:{size:11}, padding:10 } } },
+      animation:{duration:800},
+    }
+  });
+}
+
+function editProfile() { alert("Функция редактирования профиля в разработке"); }
+
+function logout() {
+  localStorage.removeItem("tr_auth");
+  window.location.href="login.html";
+}
+
+onLangChange();
+buildDonut();
+</script>
+</body>
+</html>

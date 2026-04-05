@@ -41,7 +41,10 @@ import json
 import math
 import statistics
 from typing import Dict, List, Tuple, Optional
+from dotenv import load_dotenv
 import anthropic
+
+load_dotenv()
 
 _client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY", ""))
 

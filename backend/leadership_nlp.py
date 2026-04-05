@@ -23,7 +23,10 @@ import re
 import os
 import json
 from typing import Dict, List, Tuple
+from dotenv import load_dotenv
 import anthropic
+
+load_dotenv()
 
 _client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY", ""))
 
